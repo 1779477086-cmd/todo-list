@@ -136,33 +136,45 @@
             transition: box-shadow 0.3s ease;
             overflow: hidden;
             position: relative;
+            /* 关键：取消overflow:hidden，避免弹窗被裁剪 */
+            overflow: visible !important;
         }
 
         .task-item:hover {
             box-shadow: 0 4px 12px rgba(22, 93, 255, 0.08);
         }
 
-        /* 紧急度标记 */
+        /* 紧急度标记 - 优化视觉设计 */
         .task-priority {
             width: 8px;
             height: 100%;
-            float: left;
+            position: absolute;
+            left: 0;
+            top: 0;
         }
+        /* 高紧急：红色渐变 */
         .priority-high {
-            background-color: #ff4d4f;
+            background: linear-gradient(90deg, #ff4d4f 0%, #ff7875 100%);
+            box-shadow: 0 0 8px rgba(255, 77, 79, 0.2);
         }
+        /* 中紧急：橙色渐变 */
         .priority-medium {
-            background-color: #faad14;
+            background: linear-gradient(90deg, #faad14 0%, #ffc53d 100%);
+            box-shadow: 0 0 8px rgba(250, 173, 20, 0.2);
         }
+        /* 低紧急：绿色渐变 */
         .priority-low {
-            background-color: #52c41a;
+            background: linear-gradient(90deg, #52c41a 0%, #73d13d 100%);
+            box-shadow: 0 0 8px rgba(82, 196, 26, 0.2);
         }
 
         .task-header {
             display: flex;
             align-items: center;
-            padding: 14px 16px;
+            padding: 14px 16px 14px 24px; /* 左边留空间给紧急度标记 */
             gap: 12px;
+            position: relative; /* 作为弹窗的定位父级 */
+            z-index: 1; /* 基础层级 */
         }
 
         .task-checkbox {
@@ -178,6 +190,9 @@
             font-size: 16px;
             outline: none;
             min-width: 0;
+            /* 防止输入时光标错位 */
+            white-space: pre-wrap;
+            word-break: break-word;
         }
 
         .completed .task-title {
@@ -185,11 +200,12 @@
             color: #999;
         }
 
-        /* 时间选择模块 - 稳定版 */
+        /* 时间选择模块 - 层级优化 */
         .task-time-picker {
             flex-shrink: 0;
             position: relative;
             width: 180px;
+            z-index: 2; /* 高于任务头部 */
         }
 
         .time-display {
@@ -203,21 +219,28 @@
             cursor: pointer;
             text-align: center;
             user-select: none;
+            transition: border-color 0.2s ease;
         }
 
-        /* 时间选择弹窗 - 稳定无闪烁 */
+        .time-display:hover {
+            border-color: #165DFF;
+        }
+
+        /* 时间选择弹窗 - 置顶显示 */
         .time-picker-modal {
             position: absolute;
             top: calc(100% + 5px);
             left: 0;
-            z-index: 9999;
+            z-index: 9999 !important; /* 最高层级，确保不被遮挡 */
             width: 220px;
             background: white;
             border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
             padding: 15px;
             display: none;
             border: 1px solid #e0e7ff;
+            /* 硬件加速防闪烁 */
+            transform: translateZ(0);
         }
 
         .time-picker-modal.visible {
@@ -249,11 +272,12 @@
             appearance: menulist;
         }
 
-        /* 紧急度选择框 - 稳定版 */
+        /* 紧急度选择框 - 样式优化 */
         .priority-select-container {
             flex-shrink: 0;
             position: relative;
             width: 80px;
+            z-index: 2;
         }
 
         .priority-select {
@@ -266,12 +290,18 @@
             background: #f9fbfd;
             -webkit-appearance: menulist;
             appearance: menulist;
+            transition: border-color 0.2s ease;
+        }
+
+        .priority-select:hover {
+            border-color: #165DFF;
         }
 
         .task-actions {
             display: flex;
             gap: 8px;
             flex-shrink: 0;
+            z-index: 2;
         }
 
         .toggle-detail-btn, .delete-btn {
@@ -280,11 +310,16 @@
             border-radius: 6px;
             cursor: pointer;
             font-size: 12px;
+            transition: background-color 0.2s ease;
         }
 
         .toggle-detail-btn {
             background-color: #e0e7ff;
             color: #165DFF;
+        }
+
+        .toggle-detail-btn:hover {
+            background-color: #d1dfff;
         }
 
         .delete-btn {
@@ -296,14 +331,22 @@
             background-color: #d9363e;
         }
 
-        /* 任务详情区域 */
+        /* 任务详情区域 - 优化层级 */
         .task-details {
-            padding: 0 16px 16px;
+            padding: 0 24px 16px; /* 左边留空间 */
             display: none;
+            position: relative;
+            z-index: 1; /* 低于时间弹窗 */
         }
 
         .task-details.active {
             display: block;
+            animation: slideDown 0.2s ease-in-out;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; max-height: 0; }
+            to { opacity: 1; max-height: 500px; }
         }
 
         .detail-textarea {
@@ -316,6 +359,16 @@
             resize: vertical;
             outline: none;
             font-family: inherit;
+            /* 关键：防止输入闪退 */
+            white-space: pre-wrap;
+            word-break: break-word;
+            line-height: 1.5;
+            transition: border-color 0.2s ease;
+        }
+
+        .detail-textarea:focus {
+            border-color: #165DFF;
+            box-shadow: 0 0 0 3px rgba(22, 93, 255, 0.08);
         }
 
         .task-due {
@@ -375,6 +428,7 @@
             }
             .task-header {
                 flex-wrap: wrap;
+                padding: 14px 16px 14px 24px;
             }
             .task-time-picker {
                 width: 100%;
@@ -382,7 +436,7 @@
             }
             .time-picker-modal {
                 width: 100%;
-                z-index: 9999;
+                z-index: 9999 !important;
             }
             .priority-select-container {
                 width: 100%;
@@ -420,7 +474,8 @@
     <script>
         let tasks = [];
         let activeTimePickerIndex = -1;
-        let dueTimeUpdateTimer = null; // 仅用于更新剩余时间文本的定时器
+        let dueTimeUpdateTimer = null;
+        let isEditing = false; // 标记是否正在编辑，防止输入时重渲染
 
         const taskTitleInput = document.getElementById('task-title-input');
         const addBtn = document.getElementById('add-btn');
@@ -435,7 +490,6 @@
             renderTasks();
             updateStats();
             bindEvents();
-            // 仅更新剩余时间文本，不重渲染整个列表
             startDueTimeUpdate();
         }
 
@@ -459,6 +513,8 @@
         }
 
         function saveTasks() {
+            // 防抖保存，避免频繁操作
+            if (isEditing) return;
             localStorage.setItem('todoTasks', JSON.stringify(tasks));
         }
 
@@ -495,16 +551,17 @@
 
         // 渲染所有任务（无闪烁版本）
         function renderTasks() {
-            // 保存当前弹窗状态（避免渲染后弹窗关闭）
+            // 正在编辑时不渲染，防止输入闪退
+            if (isEditing) return;
+            
+            // 保存当前弹窗状态
             const isModalOpen = activeTimePickerIndex !== -1;
             const currentModalIndex = activeTimePickerIndex;
 
-            // 直接渲染，不隐藏列表（消除opacity导致的闪烁）
             taskList.innerHTML = '';
             
             if (tasks.length === 0) {
                 taskList.innerHTML = '<li class="empty-state">暂无任务，添加一个开始吧！</li>';
-                // 恢复弹窗状态
                 if (isModalOpen) openTimeModal(currentModalIndex);
                 return;
             }
@@ -550,13 +607,13 @@
                 taskList.appendChild(li);
             });
 
-            // 恢复弹窗状态（关键：避免渲染后弹窗消失）
+            // 恢复弹窗状态
             if (isModalOpen) openTimeModal(currentModalIndex);
         }
 
         // 仅更新剩余时间文本（不重渲染整个列表）
         function updateDueTimeText() {
-            if (tasks.length === 0) return;
+            if (tasks.length === 0 || isEditing) return;
             
             tasks.forEach((task, index) => {
                 const dueTextEl = document.getElementById(`dueText-${index}`);
@@ -568,11 +625,9 @@
             });
         }
 
-        // 启动剩余时间更新定时器（仅更新文本，不重渲染）
+        // 启动剩余时间更新定时器
         function startDueTimeUpdate() {
-            // 先清除旧定时器，避免叠加
             if (dueTimeUpdateTimer) clearInterval(dueTimeUpdateTimer);
-            // 每分钟更新一次剩余时间文本，性能友好
             dueTimeUpdateTimer = setInterval(updateDueTimeText, 60000);
         }
 
@@ -620,6 +675,7 @@
 
         // 切换任务完成状态
         function toggleTask(index) {
+            if (isEditing) return;
             tasks[index].completed = !tasks[index].completed;
             saveTasks();
             renderTasks();
@@ -628,6 +684,7 @@
 
         // 切换详情展开/收起
         function toggleDetails(index) {
+            if (isEditing) return;
             tasks[index].isDetailsOpen = !tasks[index].isDetailsOpen;
             saveTasks();
             renderTasks();
@@ -635,6 +692,7 @@
 
         // 删除任务
         function deleteTask(index) {
+            if (isEditing) return;
             if (confirm('确定删除该任务？')) {
                 tasks.splice(index, 1);
                 saveTasks();
@@ -645,6 +703,8 @@
 
         // 更新任务属性
         function updateTaskProp(index, type, value) {
+            if (isEditing && (type === 'title' || type === 'details')) return;
+            
             switch(type) {
                 case 'title':
                     tasks[index].title = value.trim();
@@ -663,12 +723,15 @@
                     break;
             }
             saveTasks();
-            renderTasks();
+            // 非编辑状态才渲染，防止输入闪退
+            if (!isEditing) {
+                renderTasks();
+            }
         }
 
         // 清空已完成任务
         function clearCompletedTasks() {
-            if (!tasks.some(t => t.completed)) return;
+            if (isEditing || !tasks.some(t => t.completed)) return;
             if (confirm('确定清空所有已完成任务？')) {
                 tasks = tasks.filter(t => !t.completed);
                 saveTasks();
@@ -679,7 +742,7 @@
 
         // 打开时间选择弹窗
         function openTimeModal(index) {
-            // 关闭其他弹窗
+            if (isEditing) return;
             closeAllTimeModals();
             
             const modal = document.getElementById(`timeModal-${index}`);
@@ -713,6 +776,8 @@
 
             // 任务列表事件委托
             taskList.addEventListener('click', (e) => {
+                if (isEditing) return;
+                
                 const idx = parseInt(e.target.dataset.index);
                 
                 // 时间显示框点击
@@ -736,16 +801,30 @@
                 }
             });
 
-            // 编辑标题（失焦时保存）
+            // 标记编辑状态 - 开始编辑
+            taskList.addEventListener('focus', (e) => {
+                if (e.target.classList.contains('task-title') || e.target.classList.contains('detail-textarea')) {
+                    isEditing = true;
+                }
+            }, { capture: true });
+
+            // 标记编辑状态 - 结束编辑
             taskList.addEventListener('blur', (e) => {
                 if (e.target.classList.contains('task-title')) {
                     const idx = parseInt(e.target.dataset.index);
                     updateTaskProp(idx, 'title', e.target.textContent);
+                    isEditing = false;
+                } else if (e.target.classList.contains('detail-textarea')) {
+                    const idx = parseInt(e.target.dataset.index);
+                    updateTaskProp(idx, 'details', e.target.value);
+                    isEditing = false;
                 }
             }, { capture: true });
 
             // 编辑详情/时间/紧急度
             taskList.addEventListener('change', (e) => {
+                if (isEditing) return;
+                
                 const idx = parseInt(e.target.dataset.index);
                 if (isNaN(idx)) return;
 
@@ -760,11 +839,12 @@
                 }
             });
 
-            // 实时保存详情
+            // 实时保存详情（不触发重渲染）
             taskList.addEventListener('input', (e) => {
                 if (e.target.classList.contains('detail-textarea')) {
                     const idx = parseInt(e.target.dataset.index);
-                    updateTaskProp(idx, 'details', e.target.value);
+                    // 只更新数据，不渲染，防止输入闪退
+                    tasks[idx].details = e.target.value;
                 }
             });
 
@@ -776,7 +856,7 @@
             }, { capture: true });
         }
 
-        // 页面卸载时清除定时器（避免内存泄漏）
+        // 页面卸载时清除定时器
         window.addEventListener('beforeunload', () => {
             if (dueTimeUpdateTimer) clearInterval(dueTimeUpdateTimer);
         });
