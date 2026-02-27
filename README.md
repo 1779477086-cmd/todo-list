@@ -18,6 +18,7 @@
             line-height: 1.6;
             padding: 20px;
             min-height: 100vh;
+            overflow-y: auto !important; /* 确保页面始终可滚动 */
         }
 
         .container {
@@ -134,17 +135,15 @@
             border-radius: 12px;
             border: 1px solid #e8f0fe;
             transition: box-shadow 0.3s ease;
-            overflow: hidden;
             position: relative;
-            /* 关键：取消overflow:hidden，避免弹窗被裁剪 */
-            overflow: visible !important;
+            overflow: visible !important; /* 关键：确保弹窗不被裁剪 */
         }
 
         .task-item:hover {
             box-shadow: 0 4px 12px rgba(22, 93, 255, 0.08);
         }
 
-        /* 紧急度标记 - 优化视觉设计 */
+        /* 紧急度标记 */
         .task-priority {
             width: 8px;
             height: 100%;
@@ -152,17 +151,14 @@
             left: 0;
             top: 0;
         }
-        /* 高紧急：红色渐变 */
         .priority-high {
             background: linear-gradient(90deg, #ff4d4f 0%, #ff7875 100%);
             box-shadow: 0 0 8px rgba(255, 77, 79, 0.2);
         }
-        /* 中紧急：橙色渐变 */
         .priority-medium {
             background: linear-gradient(90deg, #faad14 0%, #ffc53d 100%);
             box-shadow: 0 0 8px rgba(250, 173, 20, 0.2);
         }
-        /* 低紧急：绿色渐变 */
         .priority-low {
             background: linear-gradient(90deg, #52c41a 0%, #73d13d 100%);
             box-shadow: 0 0 8px rgba(82, 196, 26, 0.2);
@@ -171,10 +167,10 @@
         .task-header {
             display: flex;
             align-items: center;
-            padding: 14px 16px 14px 24px; /* 左边留空间给紧急度标记 */
+            padding: 14px 16px 14px 24px;
             gap: 12px;
-            position: relative; /* 作为弹窗的定位父级 */
-            z-index: 1; /* 基础层级 */
+            position: relative;
+            z-index: 1;
         }
 
         .task-checkbox {
@@ -190,7 +186,6 @@
             font-size: 16px;
             outline: none;
             min-width: 0;
-            /* 防止输入时光标错位 */
             white-space: pre-wrap;
             word-break: break-word;
         }
@@ -200,12 +195,12 @@
             color: #999;
         }
 
-        /* 时间选择模块 - 层级优化 */
+        /* 时间选择模块 - 完全置顶 */
         .task-time-picker {
             flex-shrink: 0;
             position: relative;
             width: 180px;
-            z-index: 2; /* 高于任务头部 */
+            z-index: 1000; /* 高于所有内容 */
         }
 
         .time-display {
@@ -219,60 +214,206 @@
             cursor: pointer;
             text-align: center;
             user-select: none;
-            transition: border-color 0.2s ease;
+            transition: all 0.2s ease;
         }
 
         .time-display:hover {
             border-color: #165DFF;
+            background: #f0f7ff;
         }
 
-        /* 时间选择弹窗 - 置顶显示 */
+        /* 时间选择弹窗 - 全局置顶（关键修复） */
         .time-picker-modal {
-            position: absolute;
-            top: calc(100% + 5px);
-            left: 0;
-            z-index: 9999 !important; /* 最高层级，确保不被遮挡 */
-            width: 220px;
+            position: fixed !important; /* 固定定位，不受滚动影响 */
+            z-index: 99999 !important; /* 超高层级，确保置顶 */
+            width: 320px;
             background: white;
-            border-radius: 8px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+            padding: 20px;
             display: none;
             border: 1px solid #e0e7ff;
-            /* 硬件加速防闪烁 */
-            transform: translateZ(0);
+            transform: translateZ(0); /* 硬件加速 */
+            /* 防止滚动时弹窗抖动 */
+            will-change: top, left;
+            backface-visibility: hidden;
         }
 
         .time-picker-modal.visible {
             display: block;
-            animation: fadeIn 0.15s ease-in-out;
+            animation: fadeIn 0.2s ease-in-out;
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-5px); }
+            from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .date-input {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #e0e7ff;
-            border-radius: 6px;
-            font-size: 14px;
-            margin-bottom: 10px;
+        /* 日历样式 */
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
         }
 
-        .hour-picker {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #e0e7ff;
-            border-radius: 6px;
-            font-size: 14px;
-            -webkit-appearance: menulist;
-            appearance: menulist;
+        .calendar-nav {
+            display: flex;
+            gap: 10px;
         }
 
-        /* 紧急度选择框 - 样式优化 */
+        .calendar-nav-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: #f0f7ff;
+            color: #165DFF;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .calendar-nav-btn:hover {
+            background: #165DFF;
+            color: white;
+        }
+
+        .calendar-month {
+            font-size: 16px;
+            font-weight: 600;
+            color: #165DFF;
+        }
+
+        .calendar-week {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .calendar-week-day {
+            font-size: 12px;
+            color: #666;
+            padding: 6px 0;
+        }
+
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1/1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .calendar-day:hover {
+            background: #f0f7ff;
+        }
+
+        .calendar-day.today {
+            background: #165DFF;
+            color: white;
+            font-weight: 600;
+        }
+
+        .calendar-day.selected {
+            background: #722ED1;
+            color: white;
+        }
+
+        .calendar-day.weekend {
+            color: #ff4d4f;
+        }
+
+        .calendar-day.holiday {
+            background: #fff1f0;
+            color: #ff4d4f;
+            font-weight: 500;
+        }
+
+        .calendar-day.holiday::after {
+            content: "休";
+            position: absolute;
+            font-size: 8px;
+            bottom: 2px;
+            right: 2px;
+        }
+
+        .calendar-day.disabled {
+            color: #ccc;
+            cursor: not-allowed;
+            background: #fafafa;
+        }
+
+        /* 小时选择器 */
+        .hour-selector {
+            margin-top: 15px;
+        }
+
+        .hour-selector-title {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .hour-options {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 6px;
+        }
+
+        .hour-option {
+            padding: 6px 0;
+            text-align: center;
+            border-radius: 6px;
+            border: 1px solid #e0e7ff;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .hour-option:hover {
+            border-color: #165DFF;
+            background: #f0f7ff;
+        }
+
+        .hour-option.selected {
+            background: #165DFF;
+            color: white;
+            border-color: #165DFF;
+        }
+
+        /* 确认按钮 */
+        .time-confirm-btn {
+            width: 100%;
+            padding: 10px;
+            background: #165DFF;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.2s ease;
+        }
+
+        .time-confirm-btn:hover {
+            background: #0040c9;
+        }
+
         .priority-select-container {
             flex-shrink: 0;
             position: relative;
@@ -331,12 +472,11 @@
             background-color: #d9363e;
         }
 
-        /* 任务详情区域 - 优化层级 */
         .task-details {
-            padding: 0 24px 16px; /* 左边留空间 */
+            padding: 0 24px 16px;
             display: none;
             position: relative;
-            z-index: 1; /* 低于时间弹窗 */
+            z-index: 1;
         }
 
         .task-details.active {
@@ -359,7 +499,6 @@
             resize: vertical;
             outline: none;
             font-family: inherit;
-            /* 关键：防止输入闪退 */
             white-space: pre-wrap;
             word-break: break-word;
             line-height: 1.5;
@@ -389,16 +528,17 @@
             font-size: 16px;
         }
 
-        /* 全局遮罩层 - 稳定版 */
+        /* 全局遮罩层（不阻止页面滚动） */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.01);
-            z-index: 9998;
+            background: rgba(0,0,0,0.1);
+            z-index: 99998;
             display: none;
+            pointer-events: none; /* 允许鼠标事件穿透到下层 */
         }
 
         .modal-overlay.show {
@@ -435,8 +575,9 @@
                 margin-top: 8px;
             }
             .time-picker-modal {
-                width: 100%;
-                z-index: 9999 !important;
+                width: 90%;
+                left: 5% !important;
+                right: 5% !important;
             }
             .priority-select-container {
                 width: 100%;
@@ -444,6 +585,9 @@
             }
             .task-actions {
                 margin-top: 8px;
+            }
+            .hour-options {
+                grid-template-columns: repeat(4, 1fr);
             }
         }
     </style>
@@ -475,7 +619,36 @@
         let tasks = [];
         let activeTimePickerIndex = -1;
         let dueTimeUpdateTimer = null;
-        let isEditing = false; // 标记是否正在编辑，防止输入时重渲染
+        let isEditing = false;
+        // 存储当前选中的日期和小时（全局）
+        let calendarSelections = {};
+        
+        // 节假日数据（2025年法定节假日）
+        const holidays = {
+            "2025-01-01": "元旦",
+            "2025-01-29": "春节",
+            "2025-01-30": "春节",
+            "2025-01-31": "春节",
+            "2025-02-01": "春节",
+            "2025-02-02": "春节",
+            "2025-02-03": "春节",
+            "2025-02-04": "春节",
+            "2025-04-05": "清明节",
+            "2025-05-01": "劳动节",
+            "2025-05-02": "劳动节",
+            "2025-05-03": "劳动节",
+            "2025-05-04": "劳动节",
+            "2025-05-05": "劳动节",
+            "2025-06-02": "端午节",
+            "2025-09-07": "中秋节",
+            "2025-10-01": "国庆节",
+            "2025-10-02": "国庆节",
+            "2025-10-03": "国庆节",
+            "2025-10-04": "国庆节",
+            "2025-10-05": "国庆节",
+            "2025-10-06": "国庆节",
+            "2025-10-07": "国庆节"
+        };
 
         const taskTitleInput = document.getElementById('task-title-input');
         const addBtn = document.getElementById('add-btn');
@@ -493,7 +666,6 @@
             startDueTimeUpdate();
         }
 
-        // 加载任务（兼容旧数据）
         function loadTasks() {
             try {
                 const saved = localStorage.getItem('todoTasks');
@@ -513,18 +685,15 @@
         }
 
         function saveTasks() {
-            // 防抖保存，避免频繁操作
             if (isEditing) return;
             localStorage.setItem('todoTasks', JSON.stringify(tasks));
         }
 
-        // 获取今日日期字符串
         function getTodayString() {
             const now = new Date();
             return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         }
 
-        // 添加新任务
         function addTask() {
             const title = taskTitleInput.value.trim();
             if (!title) {
@@ -549,12 +718,9 @@
             taskTitleInput.focus();
         }
 
-        // 渲染所有任务（无闪烁版本）
         function renderTasks() {
-            // 正在编辑时不渲染，防止输入闪退
             if (isEditing) return;
             
-            // 保存当前弹窗状态
             const isModalOpen = activeTimePickerIndex !== -1;
             const currentModalIndex = activeTimePickerIndex;
 
@@ -580,10 +746,28 @@
                         <div class="task-time-picker" data-index="${index}">
                             <div class="time-display" id="timeDisplay-${index}">${task.date} ${task.hour}:00</div>
                             <div class="time-picker-modal" id="timeModal-${index}">
-                                <input type="date" class="date-input" value="${task.date}" data-index="${index}">
-                                <select class="hour-picker" data-index="${index}">
-                                    ${Array.from({length:24}, (_, i) => `<option value="${String(i).padStart(2, '0')}" ${task.hour === String(i).padStart(2, '0') ? 'selected' : ''}>${i} 点</option>`).join('')}
-                                </select>
+                                <div class="calendar-header">
+                                    <div class="calendar-nav">
+                                        <button class="calendar-nav-btn prev-month" data-index="${index}">◀</button>
+                                        <button class="calendar-nav-btn next-month" data-index="${index}">▶</button>
+                                    </div>
+                                    <div class="calendar-month" id="calendarMonth-${index}">2025年1月</div>
+                                </div>
+                                <div class="calendar-week">
+                                    <div class="calendar-week-day">日</div>
+                                    <div class="calendar-week-day">一</div>
+                                    <div class="calendar-week-day">二</div>
+                                    <div class="calendar-week-day">三</div>
+                                    <div class="calendar-week-day">四</div>
+                                    <div class="calendar-week-day">五</div>
+                                    <div class="calendar-week-day">六</div>
+                                </div>
+                                <div class="calendar-days" id="calendarDays-${index}"></div>
+                                <div class="hour-selector">
+                                    <div class="hour-selector-title">选择小时</div>
+                                    <div class="hour-options" id="hourOptions-${index}"></div>
+                                </div>
+                                <button class="time-confirm-btn" data-index="${index}">确认选择</button>
                             </div>
                         </div>
                         <div class="priority-select-container">
@@ -605,13 +789,214 @@
                 `;
                 
                 taskList.appendChild(li);
+                
+                // 初始化日历
+                initCalendar(index, task.date, task.hour);
             });
 
-            // 恢复弹窗状态
             if (isModalOpen) openTimeModal(currentModalIndex);
         }
 
-        // 仅更新剩余时间文本（不重渲染整个列表）
+        // 初始化日历（修复选择逻辑）
+        function initCalendar(index, selectedDate, selectedHour) {
+            const today = new Date();
+            let currentDate = selectedDate ? new Date(selectedDate) : today;
+            let currentYear = currentDate.getFullYear();
+            let currentMonth = currentDate.getMonth();
+            
+            // 初始化当前选择状态
+            if (!calendarSelections[index]) {
+                calendarSelections[index] = {
+                    date: selectedDate ? new Date(selectedDate) : today,
+                    hour: selectedHour || '23'
+                };
+            }
+            
+            const selection = calendarSelections[index];
+            
+            // 更新月份显示
+            document.getElementById(`calendarMonth-${index}`).textContent = `${currentYear}年${currentMonth + 1}月`;
+            
+            // 生成日历天数
+            generateCalendarDays(index, currentYear, currentMonth, selection.date);
+            
+            // 生成小时选项
+            generateHourOptions(index, selection.hour);
+            
+            // 绑定月份切换事件（修复闭包问题）
+            const prevBtn = document.querySelector(`.prev-month[data-index="${index}"]`);
+            const nextBtn = document.querySelector(`.next-month[data-index="${index}"]`);
+            
+            // 移除旧事件，防止重复绑定
+            prevBtn.removeEventListener('click', prevBtn.clickHandler);
+            nextBtn.removeEventListener('click', nextBtn.clickHandler);
+            
+            prevBtn.clickHandler = function() {
+                currentMonth--;
+                if (currentMonth < 0) {
+                    currentMonth = 11;
+                    currentYear--;
+                }
+                document.getElementById(`calendarMonth-${index}`).textContent = `${currentYear}年${currentMonth + 1}月`;
+                generateCalendarDays(index, currentYear, currentMonth, selection.date);
+            };
+            
+            nextBtn.clickHandler = function() {
+                currentMonth++;
+                if (currentMonth > 11) {
+                    currentMonth = 0;
+                    currentYear++;
+                }
+                document.getElementById(`calendarMonth-${index}`).textContent = `${currentYear}年${currentMonth + 1}月`;
+                generateCalendarDays(index, currentYear, currentMonth, selection.date);
+            };
+            
+            prevBtn.addEventListener('click', prevBtn.clickHandler);
+            nextBtn.addEventListener('click', nextBtn.clickHandler);
+            
+            // 绑定日期选择事件（修复选择逻辑）
+            const calendarDaysEl = document.getElementById(`calendarDays-${index}`);
+            calendarDaysEl.removeEventListener('click', calendarDaysEl.clickHandler);
+            
+            calendarDaysEl.clickHandler = function(e) {
+                const dayEl = e.target.closest('.calendar-day');
+                if (!dayEl || dayEl.classList.contains('disabled')) return;
+                
+                // 移除之前的选中状态
+                this.querySelectorAll('.calendar-day').forEach(el => {
+                    el.classList.remove('selected');
+                });
+                
+                // 添加新的选中状态
+                dayEl.classList.add('selected');
+                
+                // 更新选中日期
+                const day = parseInt(dayEl.dataset.day);
+                selection.date = new Date(currentYear, currentMonth, day);
+            };
+            
+            calendarDaysEl.addEventListener('click', calendarDaysEl.clickHandler);
+            
+            // 绑定小时选择事件（修复选择逻辑）
+            const hourOptionsEl = document.getElementById(`hourOptions-${index}`);
+            hourOptionsEl.removeEventListener('click', hourOptionsEl.clickHandler);
+            
+            hourOptionsEl.clickHandler = function(e) {
+                const hourEl = e.target.closest('.hour-option');
+                if (!hourEl) return;
+                
+                // 移除之前的选中状态
+                this.querySelectorAll('.hour-option').forEach(el => {
+                    el.classList.remove('selected');
+                });
+                
+                // 添加新的选中状态
+                hourEl.classList.add('selected');
+                selection.hour = hourEl.dataset.hour;
+            };
+            
+            hourOptionsEl.addEventListener('click', hourOptionsEl.clickHandler);
+            
+            // 绑定确认按钮事件（修复数据更新）
+            const confirmBtn = document.querySelector(`.time-confirm-btn[data-index="${index}"]`);
+            confirmBtn.removeEventListener('click', confirmBtn.clickHandler);
+            
+            confirmBtn.clickHandler = function() {
+                // 格式化选中的日期
+                const formattedDate = `${selection.date.getFullYear()}-${String(selection.date.getMonth() + 1).padStart(2, '0')}-${String(selection.date.getDate()).padStart(2, '0')}`;
+                
+                // 更新任务时间
+                tasks[index].date = formattedDate;
+                tasks[index].hour = selection.hour;
+                
+                // 立即保存并更新显示
+                saveTasks();
+                document.getElementById(`timeDisplay-${index}`).textContent = `${formattedDate} ${selection.hour}:00`;
+                
+                // 更新剩余时间显示
+                updateDueTimeText();
+                updateStats();
+                
+                // 关闭弹窗
+                closeAllTimeModals();
+            };
+            
+            confirmBtn.addEventListener('click', confirmBtn.clickHandler);
+        }
+
+        // 生成日历天数（优化日期判断）
+        function generateCalendarDays(index, year, month, selectedDate) {
+            const calendarDaysEl = document.getElementById(`calendarDays-${index}`);
+            calendarDaysEl.innerHTML = '';
+            
+            const today = new Date();
+            const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const firstDayOfWeek = firstDay.getDay(); // 0-6，0是周日
+            
+            // 添加月初的空白天
+            for (let i = 0; i < firstDayOfWeek; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'calendar-day disabled';
+                calendarDaysEl.appendChild(emptyDay);
+            }
+            
+            // 添加当月的天数
+            for (let day = 1; day <= lastDay.getDate(); day++) {
+                const dayEl = document.createElement('div');
+                dayEl.className = 'calendar-day';
+                dayEl.dataset.day = day;
+                dayEl.textContent = day;
+                
+                const currentDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dayDate = new Date(year, month, day);
+                
+                // 标记今天
+                if (dayDate.getTime() === todayDate.getTime()) {
+                    dayEl.classList.add('today');
+                }
+                
+                // 标记选中的日期
+                if (dayDate.getTime() === selectedDate.getTime()) {
+                    dayEl.classList.add('selected');
+                }
+                
+                // 标记周末
+                const dayOfWeek = dayDate.getDay();
+                if (dayOfWeek === 0 || dayOfWeek === 6) {
+                    dayEl.classList.add('weekend');
+                }
+                
+                // 标记节假日
+                if (holidays[currentDateStr]) {
+                    dayEl.classList.add('holiday');
+                }
+                
+                // 禁用过去的日期（除了今天）
+                if (dayDate < todayDate) {
+                    dayEl.classList.add('disabled');
+                }
+                
+                calendarDaysEl.appendChild(dayEl);
+            }
+        }
+
+        // 生成小时选项（优化选中状态）
+        function generateHourOptions(index, selectedHour) {
+            const hourOptionsEl = document.getElementById(`hourOptions-${index}`);
+            hourOptionsEl.innerHTML = '';
+            
+            for (let hour = 0; hour < 24; hour++) {
+                const hourStr = String(hour).padStart(2, '0');
+                const hourEl = document.createElement('div');
+                hourEl.className = `hour-option ${hourStr === selectedHour ? 'selected' : ''}`;
+                hourEl.dataset.hour = hourStr;
+                hourEl.textContent = `${hourStr}:00`;
+                hourOptionsEl.appendChild(hourEl);
+            }
+        }
+
         function updateDueTimeText() {
             if (tasks.length === 0 || isEditing) return;
             
@@ -625,13 +1010,11 @@
             });
         }
 
-        // 启动剩余时间更新定时器
         function startDueTimeUpdate() {
             if (dueTimeUpdateTimer) clearInterval(dueTimeUpdateTimer);
             dueTimeUpdateTimer = setInterval(updateDueTimeText, 60000);
         }
 
-        // 精确计算剩余时间
         function calcRemaining(task) {
             const now = new Date();
             const target = new Date(`${task.date} ${task.hour}:00:00`);
@@ -662,7 +1045,6 @@
             return { dueText, isOverdue: false };
         }
 
-        // 更新统计数据
         function updateStats() {
             const completed = tasks.filter(t => t.completed).length;
             const pending = tasks.length - completed;
@@ -673,7 +1055,6 @@
             clearCompletedBtn.style.opacity = completed === 0 ? 0.6 : 1;
         }
 
-        // 切换任务完成状态
         function toggleTask(index) {
             if (isEditing) return;
             tasks[index].completed = !tasks[index].completed;
@@ -682,7 +1063,6 @@
             updateStats();
         }
 
-        // 切换详情展开/收起
         function toggleDetails(index) {
             if (isEditing) return;
             tasks[index].isDetailsOpen = !tasks[index].isDetailsOpen;
@@ -690,18 +1070,18 @@
             renderTasks();
         }
 
-        // 删除任务
         function deleteTask(index) {
             if (isEditing) return;
             if (confirm('确定删除该任务？')) {
                 tasks.splice(index, 1);
+                // 清理选择状态
+                delete calendarSelections[index];
                 saveTasks();
                 renderTasks();
                 updateStats();
             }
         }
 
-        // 更新任务属性
         function updateTaskProp(index, type, value) {
             if (isEditing && (type === 'title' || type === 'details')) return;
             
@@ -723,37 +1103,63 @@
                     break;
             }
             saveTasks();
-            // 非编辑状态才渲染，防止输入闪退
             if (!isEditing) {
                 renderTasks();
             }
         }
 
-        // 清空已完成任务
         function clearCompletedTasks() {
             if (isEditing || !tasks.some(t => t.completed)) return;
             if (confirm('确定清空所有已完成任务？')) {
                 tasks = tasks.filter(t => !t.completed);
+                // 清理选择状态
+                calendarSelections = {};
                 saveTasks();
                 renderTasks();
                 updateStats();
             }
         }
 
-        // 打开时间选择弹窗
+        // 打开时间选择弹窗（优化定位，滚动时保持位置）
         function openTimeModal(index) {
             if (isEditing) return;
             closeAllTimeModals();
             
             const modal = document.getElementById(`timeModal-${index}`);
-            if (modal) {
+            const timeDisplay = document.getElementById(`timeDisplay-${index}`);
+            
+            if (modal && timeDisplay) {
+                // 获取时间显示框的位置（相对于视口）
+                const rect = timeDisplay.getBoundingClientRect();
+                
+                // 设置弹窗位置（固定定位，基于视口）
+                modal.style.top = `${rect.bottom + 10}px`;
+                modal.style.left = `${rect.left}px`;
+                
+                // 确保弹窗不超出视口右侧
+                if (rect.left + 320 > window.innerWidth) {
+                    modal.style.left = `${window.innerWidth - 330}px`;
+                }
+                
+                // 确保弹窗不超出视口底部
+                if (rect.bottom + 10 + modal.offsetHeight > window.innerHeight) {
+                    modal.style.top = `${rect.top - modal.offsetHeight - 10}px`;
+                }
+                
                 modal.classList.add('visible');
                 modalOverlay.classList.add('show');
                 activeTimePickerIndex = index;
+                
+                // 重新初始化日历选择状态
+                if (calendarSelections[index]) {
+                    const selection = calendarSelections[index];
+                    const currentDate = selection.date;
+                    generateCalendarDays(index, currentDate.getFullYear(), currentDate.getMonth(), currentDate);
+                    generateHourOptions(index, selection.hour);
+                }
             }
         }
 
-        // 关闭所有时间选择弹窗
         function closeAllTimeModals() {
             document.querySelectorAll('.time-picker-modal').forEach(modal => {
                 modal.classList.remove('visible');
@@ -762,36 +1168,36 @@
             activeTimePickerIndex = -1;
         }
 
-        // 绑定所有事件
         function bindEvents() {
-            // 添加任务
             addBtn.addEventListener('click', addTask);
             taskTitleInput.addEventListener('keypress', e => e.key === 'Enter' && addTask());
 
-            // 清空已完成
             clearCompletedBtn.addEventListener('click', clearCompletedTasks);
 
-            // 点击遮罩关闭弹窗
-            modalOverlay.addEventListener('click', closeAllTimeModals);
+            // 遮罩层点击关闭弹窗，但不阻止滚动
+            modalOverlay.addEventListener('click', function(e) {
+                e.stopPropagation();
+                closeAllTimeModals();
+            });
 
-            // 任务列表事件委托
+            // 任务列表点击事件
             taskList.addEventListener('click', (e) => {
                 if (isEditing) return;
                 
+                // 阻止事件冒泡到遮罩层
+                e.stopPropagation();
+                
                 const idx = parseInt(e.target.dataset.index);
                 
-                // 时间显示框点击
+                // 点击时间显示框打开日历
                 if (e.target.classList.contains('time-display')) {
                     const index = parseInt(e.target.id.split('-')[1]);
                     openTimeModal(index);
-                    e.stopPropagation();
                     return;
                 }
 
                 if (isNaN(idx)) return;
-                e.stopPropagation();
 
-                // 切换完成状态
                 if (e.target.classList.contains('task-checkbox')) {
                     toggleTask(idx);
                 } else if (e.target.classList.contains('toggle-detail-btn')) {
@@ -801,14 +1207,13 @@
                 }
             });
 
-            // 标记编辑状态 - 开始编辑
+            // 编辑状态管理
             taskList.addEventListener('focus', (e) => {
                 if (e.target.classList.contains('task-title') || e.target.classList.contains('detail-textarea')) {
                     isEditing = true;
                 }
             }, { capture: true });
 
-            // 标记编辑状态 - 结束编辑
             taskList.addEventListener('blur', (e) => {
                 if (e.target.classList.contains('task-title')) {
                     const idx = parseInt(e.target.dataset.index);
@@ -821,42 +1226,49 @@
                 }
             }, { capture: true });
 
-            // 编辑详情/时间/紧急度
+            // 优先级选择
             taskList.addEventListener('change', (e) => {
                 if (isEditing) return;
                 
                 const idx = parseInt(e.target.dataset.index);
                 if (isNaN(idx)) return;
 
-                if (e.target.classList.contains('date-input')) {
-                    updateTaskProp(idx, 'date', e.target.value);
-                    closeAllTimeModals();
-                } else if (e.target.classList.contains('hour-picker')) {
-                    updateTaskProp(idx, 'hour', e.target.value);
-                    closeAllTimeModals();
-                } else if (e.target.classList.contains('priority-select')) {
+                if (e.target.classList.contains('priority-select')) {
                     updateTaskProp(idx, 'priority', e.target.value);
                 }
             });
 
-            // 实时保存详情（不触发重渲染）
+            // 详情输入实时更新
             taskList.addEventListener('input', (e) => {
                 if (e.target.classList.contains('detail-textarea')) {
                     const idx = parseInt(e.target.dataset.index);
-                    // 只更新数据，不渲染，防止输入闪退
                     tasks[idx].details = e.target.value;
                 }
             });
 
-            // 阻止弹窗内部事件冒泡
+            // 阻止日历内点击关闭弹窗
             document.addEventListener('click', (e) => {
-                if (e.target.closest('.time-picker-modal') || e.target.closest('.priority-select-container')) {
+                if (e.target.closest('.time-picker-modal')) {
                     e.stopImmediatePropagation();
                 }
             }, { capture: true });
+            
+            // 窗口滚动时重新定位弹窗（保持位置固定）
+            window.addEventListener('scroll', () => {
+                if (activeTimePickerIndex !== -1) {
+                    openTimeModal(activeTimePickerIndex);
+                }
+            });
+            
+            // 窗口大小变化时重新定位弹窗
+            window.addEventListener('resize', () => {
+                if (activeTimePickerIndex !== -1) {
+                    openTimeModal(activeTimePickerIndex);
+                }
+            });
         }
 
-        // 页面卸载时清除定时器
+        // 页面卸载时清理定时器
         window.addEventListener('beforeunload', () => {
             if (dueTimeUpdateTimer) clearInterval(dueTimeUpdateTimer);
         });
